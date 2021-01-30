@@ -1,5 +1,5 @@
 class Queen:
-    def __init__(self, x = None, y = None, path = None, square = None):
+    def __init__(self, x = None, y = None, path = None, square = None, isWhite = None):
         self.x = x
         self.y = y
         self.image_path = path
@@ -7,3 +7,4 @@ class Queen:
         self.square = square
         self.height = 90
         self.width = 96
+        self.isWhite = isWhite
