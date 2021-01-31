@@ -124,10 +124,6 @@ def main():
                     isPieceSelected = False
                     selectedPiece = None
                     
-
-
-        
-
         pygame.display.update()
 
 def printBoard(screen, board):

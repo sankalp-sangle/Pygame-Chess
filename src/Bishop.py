@@ -8,3 +8,24 @@ class Bishop:
         self.height = 80
         self.width = 96
         self.isWhite = isWhite
+
+    def validate(self, newX, newY, board):
+        # If invalid movement return False
+        if abs(newX - self.x) != abs(newY - self.y):
+            return False
+
+        add_to_x = 1 if self.x < newX else -1
+        add_to_y = 1 if self.y < newY else -1
+
+        # If any obstacles in the way, return False
+        x, y = self.x + add_to_x, self.y + add_to_y
+        for i in range(abs(newX - self.x) - 1):
+            if board.squares[x][y].isOccupied:
+                return False
+            x += add_to_x
+            y += add_to_y
+
+        # If destination is not occupied, return True.
+        # If destination is occupied, but occupied by a different colour, return True. Else return False.
+        return not board.squares[newX][newY].isOccupied or (self.isWhite != board.squares[newX][newY].piece.isWhite)
+        
