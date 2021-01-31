@@ -58,6 +58,61 @@ def initializePieces(board):
     board.squares[row][3].piece = Queen(x = row, y = 3, path = '../img/white/queen.png', square = board.squares[row][3], isWhite = True)
     board.squares[row][4].piece = King(x = row, y = 4, path = '../img/white/king.png', square = board.squares[row][4], isWhite = True)
 
+
+
+def kingUnderCheck(board, king):
+    x , y = king.x, king.y
+
+    # Check for pawns
+    if king.isWhite:
+        if x-1 >= 0 and y-1 >= 0 and board.squares[x-1][y-1].isOccupied and isinstance(board.squares[x-1][y-1].piece, Pawn) and not board.squares[x-1][y-1].piece.isWhite:
+            return True
+        if x-1 >= 0 and y+1 < NO_OF_SQUARES and board.squares[x-1][y+1].isOccupied and isinstance(board.squares[x-1][y+1].piece, Pawn) and not board.squares[x-1][y+1].piece.isWhite:
+            return True
+    else:
+        if x+1 < NO_OF_SQUARES and y+1 < NO_OF_SQUARES and board.squares[x+1][y+1].isOccupied and isinstance(board.squares[x+1][y+1].piece, Pawn) and board.squares[x+1][y+1].piece.isWhite:
+            return True
+        if x+1 < NO_OF_SQUARES and y-1 >= 0 and board.squares[x+1][y-1].isOccupied and isinstance(board.squares[x+1][y-1].piece, Pawn) and board.squares[x+1][y-1].piece.isWhite:
+            return True
+
+    # Check for knights
+    DANGER_POSITIONS = [[1, 2], [2, 1], [-1, -2], [-2, -1], [1, -2], [2, -1], [-2, 1], [-1, 2]]
+    for [addX, addY] in DANGER_POSITIONS:
+        checkX = addX + x
+        checkY = addY + y
+        if checkX < 0 or checkX > 7 or checkY < 0 or checkY > 7:
+            continue
+        if board.squares[checkX][checkY].isOccupied and isinstance(board.squares[checkX][checkY].piece, Knight) and board.squares[checkX][checkY].piece.isWhite != king.isWhite:
+            return True
+    
+    # Check in vertical directions for Queens or Rooks of different colour
+    VERTICAL_DIRECTIONS = [[0, 1], [1, 0], [0, -1], [-1, 0]]
+    for [addX, addY] in VERTICAL_DIRECTIONS:
+        checkX, checkY = addX + x, addY + y
+        while checkX >= 0 and checkX <= 7 and checkY >= 0 and checkY <= 7 and not board.squares[checkX][checkY].isOccupied:
+            checkX += addX
+            checkY += addY
+        if checkX < 0 or checkX > 7 or checkY < 0 or checkY > 7:
+            continue
+        else:
+            if (isinstance(board.squares[checkX][checkY].piece, Rook) or isinstance(board.squares[checkX][checkY].piece, Queen)) and board.squares[checkX][checkY].piece.isWhite != king.isWhite:
+                return True
+
+    # Check in diagonal directions for Queens or Bishops of different colour
+    DIAGONAL_DIRECTIONS = [[1, 1], [1, -1], [-1, -1], [-1, 1]]
+    for [addX, addY] in DIAGONAL_DIRECTIONS:
+        checkX, checkY = addX + x, addY + y
+        while checkX >= 0 and checkX <= 7 and checkY >= 0 and checkY <= 7 and not board.squares[checkX][checkY].isOccupied:
+            checkX += addX
+            checkY += addY
+        if checkX < 0 or checkX > 7 or checkY < 0 or checkY > 7:
+            continue
+        else:
+            if (isinstance(board.squares[checkX][checkY].piece, Bishop) or isinstance(board.squares[checkX][checkY].piece, Queen)) and board.squares[checkX][checkY].piece.isWhite != king.isWhite:
+                return True
+
+    return False
+
 def main():
     screen = pygame.display.set_mode((SQUARE_SIZE * 8, SQUARE_SIZE * 8))
 
@@ -68,6 +123,9 @@ def main():
     board = ChessBoard()
     board.squares = initializeBoard()
     initializePieces(board)
+
+    whiteKing = board.squares[7][4].piece
+    blackKing = board.squares[0][4].piece
 
     for row in range(len(board.squares)):
         for col in range(len(board.squares[0])):
@@ -104,6 +162,10 @@ def main():
                     decision = (isWhiteTurn == selectedPiece.isWhite) and selectedPiece.validate(row, col, board)
                     print("Decision is " + str(decision))
                     if decision:
+                        oldSquare = selectedPiece.square
+                        pieceOnNewSquare = board.squares[row][col].piece
+                        wasOccupied = board.squares[row][col].isOccupied
+
                         # Assign new position to piece
                         selectedPiece.x = row
                         selectedPiece.y = col
@@ -117,8 +179,18 @@ def main():
                         board.squares[row][col].piece = selectedPiece
                         board.squares[row][col].isOccupied = True
 
-                        # After successful move, flip turn variable
-                        isWhiteTurn = not isWhiteTurn
+                        # Check if new position leaves the king in check
+                        if kingUnderCheck(board, whiteKing if isWhiteTurn else blackKing):
+                            # Revert the changes
+                            selectedPiece.square.piece = pieceOnNewSquare
+                            oldSquare.piece = selectedPiece
+                            selectedPiece.square.isOccupied = wasOccupied
+                            selectedPiece.x, selectedPiece.y = oldSquare.x, oldSquare.y
+                            selectedPiece.square = oldSquare
+                            oldSquare.isOccupied = True
+                        else:
+                            # After successful move, flip turn variable
+                            isWhiteTurn = not isWhiteTurn
 
                     # Remove selected piece
                     isPieceSelected = False
