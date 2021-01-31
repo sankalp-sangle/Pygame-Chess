@@ -11,10 +11,6 @@ class Pawn:
         self.jumpedTwoSquares = False
 
     def validate(self, newX, newY, board):
-        print(newX)
-        print(newY)
-        print(self.x)
-        print(self.y)
         if not self.isWhite:
             if self.y == newY and (self.x + 1) == newX and not board.squares[newX][newY].isOccupied:
                 return True
@@ -33,8 +29,6 @@ class Pawn:
             return False
 
         if self.isWhite:
-            print("Here, 26")
-            print(board.squares[newX][newY].isOccupied)
             if self.y == newY and (self.x - 1) == newX and not board.squares[newX][newY].isOccupied:
                 return True
             if (self.y - 1) == newY and (self.x - 1) == newX and board.squares[newX][newY].isOccupied and not board.squares[newX][newY].piece.isWhite:

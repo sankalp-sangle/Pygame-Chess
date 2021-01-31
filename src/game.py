@@ -152,7 +152,6 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 (x, y) = pygame.mouse.get_pos()
                 row, col = y // SQUARE_SIZE, x // SQUARE_SIZE
-                print(str(row) + " " + str(col))
 
                 if not isPieceSelected:                    
                     if board.squares[row][col].piece:
@@ -160,7 +159,6 @@ def main():
                         selectedPiece = board.squares[row][col].piece
                 else:
                     decision = (isWhiteTurn == selectedPiece.isWhite) and selectedPiece.validate(row, col, board)
-                    print("Decision is " + str(decision))
                     if decision:
                         oldSquare = selectedPiece.square
                         pieceOnNewSquare = board.squares[row][col].piece
