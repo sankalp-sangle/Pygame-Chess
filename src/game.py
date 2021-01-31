@@ -111,6 +111,16 @@ def kingUnderCheck(board, king):
             if (isinstance(board.squares[checkX][checkY].piece, Bishop) or isinstance(board.squares[checkX][checkY].piece, Queen)) and board.squares[checkX][checkY].piece.isWhite != king.isWhite:
                 return True
 
+    # Check for King of different colour
+    KING_DIRECTIONS = [[1,1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1], [0, 1]]
+    for [addX, addY] in KING_DIRECTIONS:
+        checkX, checkY = addX + x, addY + y
+        if checkX < 0 or checkX > 7 or checkY < 0 or checkY > 7:
+            continue
+        else:
+            if isinstance(board.squares[checkX][checkY].piece, King):
+                return True
+
     return False
 
 def main():
