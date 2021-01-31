@@ -8,3 +8,16 @@ class Knight:
         self.height = 75
         self.width = 96
         self.isWhite = isWhite
+
+    def validate(self, newX, newY, board):
+        VALID_DIFFERENCES = [[1, 2], [2, 1], [-1, -2], [-2, -1], [1, -2], [2, -1], [-2, 1], [-1, 2]]
+        difference = [newX - self.x, newY - self.y]
+
+        # If invalid movement, return False
+        if difference not in VALID_DIFFERENCES:
+            return False
+
+        # If valid movement and square is not occupied, return True
+        # If square is occupied, return True if different colour (capture), else return False
+        # Some simplification using De Morgan's Laws leads to the following expression
+        return not board.squares[newX][newY].isOccupied or (self.isWhite != board.squares[newX][newY].piece.isWhite)
