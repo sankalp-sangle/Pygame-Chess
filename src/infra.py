@@ -1,6 +1,8 @@
 class ChessBoard:
     def __init__(self, squares = []):
         self.squares = squares
+        self.lastPieceMoved = None
+        self.consideringEnPassant = False
 
 class Square():
     def __init__(self, isWhite = None, isOccupied = False, x = None, y = None, piece = None):

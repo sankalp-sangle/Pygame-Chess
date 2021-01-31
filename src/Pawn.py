@@ -8,6 +8,7 @@ class Pawn:
         self.height = 75
         self.width = 96
         self.isWhite = isWhite
+        self.jumpedTwoSquares = False
 
     def validate(self, newX, newY, board):
         print(newX)
@@ -22,6 +23,11 @@ class Pawn:
             if (self.y + 1) == newY and (self.x + 1) == newX and board.squares[newX][newY].isOccupied and board.squares[newX][newY].piece.isWhite:
                 return True
             if self.x == 1 and newX == 3 and self.y == newY and not board.squares[newX][newY].isOccupied and not board.squares[newX - 1][newY].isOccupied:
+                self.jumpedTwoSquares = True
+                return True
+            # En Passant rule
+            if self.x == 4 and newX == 5 and isinstance(board.lastPieceMoved, Pawn) and board.lastPieceMoved.jumpedTwoSquares and newY == board.lastPieceMoved.y and board.lastPieceMoved.x == 4:
+                board.consideringEnPassant = True
                 return True
 
             return False
@@ -36,6 +42,11 @@ class Pawn:
             if (self.y + 1) == newY and (self.x - 1) == newX and board.squares[newX][newY].isOccupied and not board.squares[newX][newY].piece.isWhite:
                 return True
             if self.x == 6 and newX == 4 and self.y == newY and not board.squares[newX][newY].isOccupied and not board.squares[newX + 1][newY].isOccupied:
+                self.jumpedTwoSquares = True
+                return True
+            # En Passant rule
+            if self.x == 3 and newX == 2 and isinstance(board.lastPieceMoved, Pawn) and board.lastPieceMoved.jumpedTwoSquares and newY == board.lastPieceMoved.y and board.lastPieceMoved.x == 3:
+                board.consideringEnPassant = True
                 return True
             
             return False

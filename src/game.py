@@ -188,9 +188,19 @@ def main():
                             selectedPiece.x, selectedPiece.y = oldSquare.x, oldSquare.y
                             selectedPiece.square = oldSquare
                             oldSquare.isOccupied = True
+                            board.consideringEnPassant = False
                         else:
                             # After successful move, flip turn variable
                             isWhiteTurn = not isWhiteTurn
+
+                            # If an En Passant move, remove the captured pawn
+                            if board.consideringEnPassant:
+                                board.lastPieceMoved.square.piece = None
+                                board.lastPieceMoved.square.isOccupied = False
+                                board.consideringEnPassant = False
+
+                            # Update last piece moved
+                            board.lastPieceMoved = selectedPiece
 
                     # Remove selected piece
                     isPieceSelected = False
