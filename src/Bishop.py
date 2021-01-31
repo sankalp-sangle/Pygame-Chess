@@ -14,12 +14,12 @@ class Bishop:
         if abs(newX - self.x) != abs(newY - self.y):
             return False
 
-        add_to_x = 1 if self.x < newX else -1
-        add_to_y = 1 if self.y < newY else -1
+        add_to_x = 0 if self.x == newX else (1 if newX > self.x else -1)
+        add_to_y = 0 if self.y == newY else (1 if newY > self.y else -1)
 
         # If any obstacles in the way, return False
         x, y = self.x + add_to_x, self.y + add_to_y
-        for i in range(abs(newX - self.x) - 1):
+        for i in range(max(abs(newX - self.x), abs(newY - self.y)) - 1):
             if board.squares[x][y].isOccupied:
                 return False
             x += add_to_x
