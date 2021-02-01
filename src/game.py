@@ -15,8 +15,6 @@ NO_OF_SQUARES = 8
 # Initialize pygame
 pygame.init()
 
-directions = [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]
-
 def initializeBoard():
     board = [ [] for x in range(8) ]
     parity = 0
@@ -144,7 +142,6 @@ def main():
             if square.piece:
                 square.piece.image = pygame.image.load(square.piece.image_path)
             
-
     isWhiteTurn = True
 
     state_running = True
