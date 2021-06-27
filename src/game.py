@@ -195,6 +195,12 @@ def main():
                             oldSquare.isOccupied = True
                             board.consideringEnPassant = False
                         else:
+                            # Check for pawn promotion
+                            if isinstance(selectedPiece, Pawn) and ((selectedPiece.isWhite and selectedPiece.x == 0) or (not selectedPiece.isWhite and selectedPiece.x == 7)):
+                                selectedPiece.square.piece = Queen(x = selectedPiece.x, y = selectedPiece.y, path = '../img/' + ('white' if selectedPiece.isWhite else 'black') + '/queen.png', square = selectedPiece.square, isWhite = selectedPiece.isWhite)
+                                selectedPiece = selectedPiece.square.piece
+                                selectedPiece.image = pygame.image.load(selectedPiece.image_path)
+
                             # After successful move, flip turn variable
                             isWhiteTurn = not isWhiteTurn
 
