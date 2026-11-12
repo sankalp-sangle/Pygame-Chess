@@ -1,10 +1,10 @@
 """Rook, Bishop and Queen: slide any distance along their directions until blocked."""
 import pytest
 
-from Rook import Rook
 from Bishop import Bishop
-from Queen import Queen
 from Knight import Knight
+from Queen import Queen
+from Rook import Rook
 
 SLIDING = [Rook, Bishop, Queen]
 

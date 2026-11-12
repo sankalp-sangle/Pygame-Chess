@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import pygame
+
     from Piece import Piece
 
 

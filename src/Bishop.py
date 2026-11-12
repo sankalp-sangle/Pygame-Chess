@@ -1,4 +1,4 @@
-from Piece import SlidingPiece, DIAGONAL_DIRECTIONS
+from Piece import DIAGONAL_DIRECTIONS, SlidingPiece
 
 
 class Bishop(SlidingPiece):

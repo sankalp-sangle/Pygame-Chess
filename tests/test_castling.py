@@ -17,10 +17,9 @@ import pygame
 import pytest
 
 import game
+from Bishop import Bishop
 from King import King
 from Rook import Rook
-from Knight import Knight
-from Bishop import Bishop
 
 SRC = Path(__file__).resolve().parent.parent / "src"
 

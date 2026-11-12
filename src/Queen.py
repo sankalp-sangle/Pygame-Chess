@@ -1,4 +1,4 @@
-from Piece import SlidingPiece, ORTHOGONAL_DIRECTIONS, DIAGONAL_DIRECTIONS
+from Piece import DIAGONAL_DIRECTIONS, ORTHOGONAL_DIRECTIONS, SlidingPiece
 
 
 class Queen(SlidingPiece):

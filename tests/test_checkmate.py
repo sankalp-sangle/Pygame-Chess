@@ -2,12 +2,12 @@
 import pytest
 
 import game
+from Bishop import Bishop
 from infra import ChessBoard
 from King import King
+from Pawn import Pawn
 from Queen import Queen
 from Rook import Rook
-from Bishop import Bishop
-from Pawn import Pawn
 
 
 @pytest.fixture

@@ -1,0 +1,14 @@
+line-length = 120
+# Lets import sorting recognise our own modules (King, game, ...) as first-party
+src = ["src", "tests"]
+
+[lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes: unused imports, undefined names, ...
+    "I",  # import sorting
+]
+ignore = [
+    "E501",  # line length: left to a formatter rather than the linter
+]

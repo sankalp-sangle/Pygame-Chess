@@ -1,13 +1,13 @@
 """Shared behaviour from the Piece base class, checked across every piece type."""
 import pytest
 
-from Piece import Piece
-from King import King
-from Queen import Queen
-from Rook import Rook
 from Bishop import Bishop
+from King import King
 from Knight import Knight
 from Pawn import Pawn
+from Piece import Piece
+from Queen import Queen
+from Rook import Rook
 
 ALL_PIECES = [King, Queen, Rook, Bishop, Knight, Pawn]
 

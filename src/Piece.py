@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import pygame
+
     from infra import ChessBoard, Square
 
 Offset = tuple[int, int]

@@ -1,4 +1,4 @@
-from Piece import SlidingPiece, ORTHOGONAL_DIRECTIONS
+from Piece import ORTHOGONAL_DIRECTIONS, SlidingPiece
 
 
 class Rook(SlidingPiece):

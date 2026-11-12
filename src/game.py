@@ -3,14 +3,14 @@ import functools
 
 import pygame
 
+from Bishop import Bishop
 from infra import ChessBoard, Square
 from King import King
-from Queen import Queen
-from Rook import Rook
 from Knight import Knight
-from Bishop import Bishop
 from Pawn import Pawn
 from Piece import Piece
+from Queen import Queen
+from Rook import Rook
 
 SQUARE_SIZE   = 100
 NO_OF_SQUARES = 8
@@ -89,7 +89,7 @@ def kingUnderCheck(board, king):
             continue
         if board.squares[checkX][checkY].isOccupied and isinstance(board.squares[checkX][checkY].piece, Knight) and board.squares[checkX][checkY].piece.isWhite != king.isWhite:
             return True
-    
+
     # Check in vertical directions for Queens or Rooks of different colour
     VERTICAL_DIRECTIONS = [[0, 1], [1, 0], [0, -1], [-1, 0]]
     for [addX, addY] in VERTICAL_DIRECTIONS:
@@ -214,7 +214,7 @@ def main():
             square.image = pygame.image.load(square.image_path)
             if square.piece:
                 square.piece.image = pygame.image.load(square.piece.image_path)
-            
+
     isWhiteTurn = True
 
     state_running = True
@@ -283,7 +283,7 @@ def main():
 
                     # Remove selected piece
                     selectedPiece = None
-                    
+
         pygame.display.update()
 
 def printBoard(screen, board, selectedSquare=None, message=None):
@@ -291,10 +291,10 @@ def printBoard(screen, board, selectedSquare=None, message=None):
         for col in range(len(board.squares[0])):
             square = board.squares[row][col]
             assert square.image is not None, "square images are loaded in main()"
-            screen.blit(square.image, (square.y * SQUARE_SIZE, square.x * SQUARE_SIZE))       
+            screen.blit(square.image, (square.y * SQUARE_SIZE, square.x * SQUARE_SIZE))
             if square.piece:
                 assert square.piece.image is not None, "piece images are loaded in main()"
-                screen.blit(square.piece.image, (square.y * SQUARE_SIZE + (SQUARE_SIZE - square.piece.width) / 2, square.x * SQUARE_SIZE + (SQUARE_SIZE - square.piece.height) / 2))       
+                screen.blit(square.piece.image, (square.y * SQUARE_SIZE + (SQUARE_SIZE - square.piece.width) / 2, square.x * SQUARE_SIZE + (SQUARE_SIZE - square.piece.height) / 2))
 
     # Outline the selected piece's square
     if selectedSquare is not None:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from Piece import SteppingPiece, ORTHOGONAL_DIRECTIONS, DIAGONAL_DIRECTIONS
+from Piece import DIAGONAL_DIRECTIONS, ORTHOGONAL_DIRECTIONS, SteppingPiece
 from Rook import Rook
 
 if TYPE_CHECKING:

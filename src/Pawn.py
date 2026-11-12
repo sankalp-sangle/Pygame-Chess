@@ -47,5 +47,5 @@ class Pawn(Piece):
             if self.x == 3 and newX == 2 and isinstance(board.lastPieceMoved, Pawn) and board.lastPieceMoved.jumpedTwoSquares and newY == board.lastPieceMoved.y and board.lastPieceMoved.x == 3:
                 board.consideringEnPassant = True
                 return True
-            
+
             return False
