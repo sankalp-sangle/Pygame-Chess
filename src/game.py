@@ -12,6 +12,8 @@ from Piece import Piece
 
 SQUARE_SIZE   = 100
 NO_OF_SQUARES = 8
+HIGHLIGHT_COLOUR = (0, 200, 0)
+HIGHLIGHT_WIDTH  = 4
 
 # Initialize pygame
 pygame.init()
@@ -151,7 +153,7 @@ def main():
     selectedPiece: Piece | None = None
 
     while state_running:
-        printBoard(screen, board)       
+        printBoard(screen, board, selectedPiece.square if selectedPiece else None)
 
         events = pygame.event.get()
         for event in events:
@@ -162,7 +164,13 @@ def main():
                 row, col = y // SQUARE_SIZE, x // SQUARE_SIZE
 
                 if selectedPiece is None:
-                    selectedPiece = board.squares[row][col].piece
+                    # Only the side to move can select a piece
+                    clickedPiece = board.squares[row][col].piece
+                    if clickedPiece is not None and clickedPiece.isWhite == isWhiteTurn:
+                        selectedPiece = clickedPiece
+                elif selectedPiece.square is board.squares[row][col]:
+                    # Clicking the selected square again deselects it
+                    selectedPiece = None
                 else:
                     decision = (isWhiteTurn == selectedPiece.isWhite) and selectedPiece.validate(row, col, board)
                     if decision:
@@ -217,7 +225,7 @@ def main():
                     
         pygame.display.update()
 
-def printBoard(screen, board):
+def printBoard(screen, board, selectedSquare=None):
     for row in range(len(board.squares)):
         for col in range(len(board.squares[0])):
             square = board.squares[row][col]
@@ -226,6 +234,11 @@ def printBoard(screen, board):
             if square.piece:
                 assert square.piece.image is not None, "piece images are loaded in main()"
                 screen.blit(square.piece.image, (square.y * SQUARE_SIZE + (SQUARE_SIZE - square.piece.width) / 2, square.x * SQUARE_SIZE + (SQUARE_SIZE - square.piece.height) / 2))       
+
+    # Outline the selected piece's square
+    if selectedSquare is not None:
+        rect = pygame.Rect(selectedSquare.y * SQUARE_SIZE, selectedSquare.x * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
+        pygame.draw.rect(screen, HIGHLIGHT_COLOUR, rect, HIGHLIGHT_WIDTH)
 
 if __name__ == "__main__":
     main()
