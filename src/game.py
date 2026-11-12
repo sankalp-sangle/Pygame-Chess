@@ -1,4 +1,6 @@
 # Import the pygame module
+import functools
+
 import pygame
 
 from infra import ChessBoard, Square
@@ -14,6 +16,8 @@ SQUARE_SIZE   = 100
 NO_OF_SQUARES = 8
 HIGHLIGHT_COLOUR = (0, 200, 0)
 HIGHLIGHT_WIDTH  = 4
+OVERLAY_COLOUR   = (0, 0, 0, 150)    # translucent black over the board when the game ends
+BANNER_COLOUR    = (220, 30, 30)
 
 # Initialize pygame
 pygame.init()
@@ -124,6 +128,56 @@ def kingUnderCheck(board, king):
 
     return False
 
+def movePiece(board, piece, row, col):
+    """Move `piece` to (row, col), replacing whatever was there. Returns the captured piece, if any."""
+    oldSquare, newSquare = piece.square, board.squares[row][col]
+    captured = newSquare.piece
+    oldSquare.piece, oldSquare.isOccupied = None, False
+    newSquare.piece, newSquare.isOccupied = piece, True
+    piece.square, piece.x, piece.y = newSquare, row, col
+    return captured
+
+def leavesKingInCheck(board, piece, row, col, king, enPassantVictim=None):
+    """Try the move, test whether `king` is attacked, then put everything back."""
+    oldSquare = piece.square
+    if enPassantVictim is not None:
+        enPassantVictim.square.piece, enPassantVictim.square.isOccupied = None, False
+    captured = movePiece(board, piece, row, col)
+
+    inCheck = kingUnderCheck(board, king)
+
+    newSquare = piece.square
+    movePiece(board, piece, oldSquare.x, oldSquare.y)
+    newSquare.piece, newSquare.isOccupied = captured, captured is not None
+    if enPassantVictim is not None:
+        enPassantVictim.square.piece, enPassantVictim.square.isOccupied = enPassantVictim, True
+    return inCheck
+
+def hasLegalMove(board, isWhite, king):
+    """True if the side `isWhite` has at least one move that doesn't leave its king in check."""
+    pieces = [square.piece for row in board.squares for square in row
+              if square.piece is not None and square.piece.isWhite == isWhite]
+    for piece in pieces:
+        for row in range(NO_OF_SQUARES):
+            for col in range(NO_OF_SQUARES):
+                # Pawn.validate() sets flags as a side effect, so save and restore them
+                savedEnPassant = board.consideringEnPassant
+                savedJumped = piece.jumpedTwoSquares if isinstance(piece, Pawn) else False
+                valid = piece.validate(row, col, board)
+                isEnPassant = board.consideringEnPassant and not savedEnPassant
+                board.consideringEnPassant = savedEnPassant
+                if isinstance(piece, Pawn):
+                    piece.jumpedTwoSquares = savedJumped
+
+                victim = board.lastPieceMoved if isEnPassant else None
+                if valid and not leavesKingInCheck(board, piece, row, col, king, victim):
+                    return True
+    return False
+
+def isCheckmate(board, isWhite, king):
+    """True if the side `isWhite` is in check and has no legal move."""
+    return kingUnderCheck(board, king) and not hasLegalMove(board, isWhite, king)
+
 def main():
     screen = pygame.display.set_mode((SQUARE_SIZE * 8, SQUARE_SIZE * 8))
 
@@ -151,15 +205,17 @@ def main():
     state_running = True
 
     selectedPiece: Piece | None = None
+    gameOver = False
 
     while state_running:
-        printBoard(screen, board, selectedPiece.square if selectedPiece else None)
+        printBoard(screen, board, selectedPiece.square if selectedPiece else None,
+                   "CHECKMATE" if gameOver else None)
 
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
                 state_running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN and not gameOver:
                 (x, y) = pygame.mouse.get_pos()
                 row, col = y // SQUARE_SIZE, x // SQUARE_SIZE
 
@@ -174,34 +230,13 @@ def main():
                 else:
                     decision = (isWhiteTurn == selectedPiece.isWhite) and selectedPiece.validate(row, col, board)
                     if decision:
-                        oldSquare = selectedPiece.square
-                        pieceOnNewSquare = board.squares[row][col].piece
-                        wasOccupied = board.squares[row][col].isOccupied
-
-                        # Assign new position to piece
-                        selectedPiece.x = row
-                        selectedPiece.y = col
-                        
-                        # Remove piece for earlier square
-                        selectedPiece.square.piece = None
-                        selectedPiece.square.isOccupied = False
-
-                        # Assign piece to new square and new square to piece
-                        selectedPiece.square = board.squares[row][col]
-                        board.squares[row][col].piece = selectedPiece
-                        board.squares[row][col].isOccupied = True
-
-                        # Check if new position leaves the king in check
-                        if kingUnderCheck(board, whiteKing if isWhiteTurn else blackKing):
-                            # Revert the changes
-                            selectedPiece.square.piece = pieceOnNewSquare
-                            oldSquare.piece = selectedPiece
-                            selectedPiece.square.isOccupied = wasOccupied
-                            selectedPiece.x, selectedPiece.y = oldSquare.x, oldSquare.y
-                            selectedPiece.square = oldSquare
-                            oldSquare.isOccupied = True
+                        # Reject the move if it would leave the mover's king in check
+                        enPassantVictim = board.lastPieceMoved if board.consideringEnPassant else None
+                        if leavesKingInCheck(board, selectedPiece, row, col, whiteKing if isWhiteTurn else blackKing, enPassantVictim):
                             board.consideringEnPassant = False
                         else:
+                            movePiece(board, selectedPiece, row, col)
+
                             # Check for pawn promotion
                             if isinstance(selectedPiece, Pawn) and ((selectedPiece.isWhite and selectedPiece.x == 0) or (not selectedPiece.isWhite and selectedPiece.x == 7)):
                                 selectedPiece.square.piece = Queen(x = selectedPiece.x, y = selectedPiece.y, path = '../img/' + ('white' if selectedPiece.isWhite else 'black') + '/queen.png', square = selectedPiece.square, isWhite = selectedPiece.isWhite)
@@ -220,12 +255,15 @@ def main():
                             # Update last piece moved
                             board.lastPieceMoved = selectedPiece
 
+                            # The side now to move is checkmated if it's in check with no legal move
+                            gameOver = isCheckmate(board, isWhiteTurn, whiteKing if isWhiteTurn else blackKing)
+
                     # Remove selected piece
                     selectedPiece = None
                     
         pygame.display.update()
 
-def printBoard(screen, board, selectedSquare=None):
+def printBoard(screen, board, selectedSquare=None, message=None):
     for row in range(len(board.squares)):
         for col in range(len(board.squares[0])):
             square = board.squares[row][col]
@@ -239,6 +277,18 @@ def printBoard(screen, board, selectedSquare=None):
     if selectedSquare is not None:
         rect = pygame.Rect(selectedSquare.y * SQUARE_SIZE, selectedSquare.x * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
         pygame.draw.rect(screen, HIGHLIGHT_COLOUR, rect, HIGHLIGHT_WIDTH)
+
+    # Dim the board and show a banner, e.g. "CHECKMATE"
+    if message is not None:
+        overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+        overlay.fill(OVERLAY_COLOUR)
+        screen.blit(overlay, (0, 0))
+        text = bannerFont().render(message, True, BANNER_COLOUR)
+        screen.blit(text, text.get_rect(center=screen.get_rect().center))
+
+@functools.cache
+def bannerFont():
+    return pygame.font.Font(None, 140)
 
 if __name__ == "__main__":
     main()
