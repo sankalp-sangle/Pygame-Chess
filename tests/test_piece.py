@@ -14,13 +14,14 @@ ALL_PIECES = [King, Queen, Rook, Bishop, Knight, Pawn]
 
 def test_base_piece_validate_is_abstract(board):
     with pytest.raises(NotImplementedError):
-        Piece(x=0, y=0, isWhite=True).validate(1, 1, board)
+        Piece(x=0, y=0, square=board.squares[0][0], isWhite=True).validate(1, 1, board)
 
 
 @pytest.mark.parametrize("cls", ALL_PIECES)
-def test_constructor_sets_position_colour_and_sprite_size(cls):
-    piece = cls(x=2, y=5, path="img.png", isWhite=False)
-    assert (piece.x, piece.y, piece.isWhite, piece.image_path) == (2, 5, False, "img.png")
+def test_constructor_sets_position_colour_and_sprite_size(board, cls):
+    square = board.squares[2][5]
+    piece = cls(x=2, y=5, square=square, isWhite=False, path="img.png")
+    assert (piece.x, piece.y, piece.square, piece.isWhite, piece.image_path) == (2, 5, square, False, "img.png")
     assert piece.width == 96
     assert piece.height > 0
 

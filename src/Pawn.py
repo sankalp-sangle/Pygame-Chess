@@ -1,20 +1,27 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from Piece import Piece
+
+if TYPE_CHECKING:
+    from infra import ChessBoard, Square
 
 
 class Pawn(Piece):
     HEIGHT = 75
 
-    def __init__(self, x = None, y = None, path = None, square = None, isWhite = None):
-        super().__init__(x, y, path, square, isWhite)
+    def __init__(self, x: int, y: int, square: Square, isWhite: bool, path: str = ""):
+        super().__init__(x, y, square, isWhite, path)
         self.jumpedTwoSquares = False
 
-    def validate(self, newX, newY, board):
+    def validate(self, newX: int, newY: int, board: ChessBoard) -> bool:
         if not self.isWhite:
             if self.y == newY and (self.x + 1) == newX and not board.squares[newX][newY].isOccupied:
                 return True
-            if (self.y - 1) == newY and (self.x + 1) == newX and board.squares[newX][newY].isOccupied and board.squares[newX][newY].piece.isWhite:
+            if (self.y - 1) == newY and (self.x + 1) == newX and self.isEnemyAt(newX, newY, board):
                 return True
-            if (self.y + 1) == newY and (self.x + 1) == newX and board.squares[newX][newY].isOccupied and board.squares[newX][newY].piece.isWhite:
+            if (self.y + 1) == newY and (self.x + 1) == newX and self.isEnemyAt(newX, newY, board):
                 return True
             if self.x == 1 and newX == 3 and self.y == newY and not board.squares[newX][newY].isOccupied and not board.squares[newX - 1][newY].isOccupied:
                 self.jumpedTwoSquares = True
@@ -26,12 +33,12 @@ class Pawn(Piece):
 
             return False
 
-        if self.isWhite:
+        else:
             if self.y == newY and (self.x - 1) == newX and not board.squares[newX][newY].isOccupied:
                 return True
-            if (self.y - 1) == newY and (self.x - 1) == newX and board.squares[newX][newY].isOccupied and not board.squares[newX][newY].piece.isWhite:
+            if (self.y - 1) == newY and (self.x - 1) == newX and self.isEnemyAt(newX, newY, board):
                 return True
-            if (self.y + 1) == newY and (self.x - 1) == newX and board.squares[newX][newY].isOccupied and not board.squares[newX][newY].piece.isWhite:
+            if (self.y + 1) == newY and (self.x - 1) == newX and self.isEnemyAt(newX, newY, board):
                 return True
             if self.x == 6 and newX == 4 and self.y == newY and not board.squares[newX][newY].isOccupied and not board.squares[newX + 1][newY].isOccupied:
                 self.jumpedTwoSquares = True

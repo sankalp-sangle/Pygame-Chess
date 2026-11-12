@@ -1,32 +1,46 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import pygame
+    from infra import ChessBoard, Square
+
+Offset = tuple[int, int]
+
+
 class Piece:
     # Sprite size in pixels, used to center the image on its square. Overridden per piece.
     HEIGHT = 0
     WIDTH = 96
 
-    def __init__(self, x = None, y = None, path = None, square = None, isWhite = None):
+    def __init__(self, x: int, y: int, square: Square, isWhite: bool, path: str = ""):
         self.x = x
         self.y = y
         self.image_path = path
-        self.image = None
+        self.image: pygame.Surface | None = None
         self.square = square
         self.height = self.HEIGHT
         self.width = self.WIDTH
         self.isWhite = isWhite
 
-    def validate(self, newX, newY, board):
+    def validate(self, newX: int, newY: int, board: ChessBoard) -> bool:
         raise NotImplementedError
 
-    def canLandOn(self, newX, newY, board):
+    def canLandOn(self, newX: int, newY: int, board: ChessBoard) -> bool:
         # A piece can land on an empty square or capture a piece of the other colour
-        target = board.squares[newX][newY]
-        return not target.isOccupied or target.piece.isWhite != self.isWhite
+        return not board.squares[newX][newY].isOccupied or self.isEnemyAt(newX, newY, board)
+
+    def isEnemyAt(self, newX: int, newY: int, board: ChessBoard) -> bool:
+        target = board.squares[newX][newY].piece
+        return target is not None and target.isWhite != self.isWhite
 
 
 class SteppingPiece(Piece):
     # Pieces that jump straight to one of a fixed set of offsets (King, Knight)
-    OFFSETS = ()
+    OFFSETS: tuple[Offset, ...] = ()
 
-    def validate(self, newX, newY, board):
+    def validate(self, newX: int, newY: int, board: ChessBoard) -> bool:
         if (newX - self.x, newY - self.y) not in self.OFFSETS:
             return False
         return self.canLandOn(newX, newY, board)
@@ -34,9 +48,9 @@ class SteppingPiece(Piece):
 
 class SlidingPiece(Piece):
     # Pieces that slide any distance along a set of directions until blocked (Rook, Bishop, Queen)
-    DIRECTIONS = ()
+    DIRECTIONS: tuple[Offset, ...] = ()
 
-    def validate(self, newX, newY, board):
+    def validate(self, newX: int, newY: int, board: ChessBoard) -> bool:
         dx, dy = newX - self.x, newY - self.y
         if dx == 0 and dy == 0:
             return False
@@ -59,9 +73,9 @@ class SlidingPiece(Piece):
         return self.canLandOn(newX, newY, board)
 
 
-ORTHOGONAL_DIRECTIONS = ((0, 1), (1, 0), (0, -1), (-1, 0))
-DIAGONAL_DIRECTIONS = ((1, 1), (1, -1), (-1, -1), (-1, 1))
+ORTHOGONAL_DIRECTIONS: tuple[Offset, ...] = ((0, 1), (1, 0), (0, -1), (-1, 0))
+DIAGONAL_DIRECTIONS: tuple[Offset, ...] = ((1, 1), (1, -1), (-1, -1), (-1, 1))
 
 
-def _sign(n):
+def _sign(n: int) -> int:
     return (n > 0) - (n < 0)

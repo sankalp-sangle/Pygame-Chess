@@ -8,6 +8,7 @@ from Rook import Rook
 from Knight import Knight
 from Bishop import Bishop
 from Pawn import Pawn
+from Piece import Piece
 
 SQUARE_SIZE   = 100
 NO_OF_SQUARES = 8
@@ -134,6 +135,7 @@ def main():
 
     whiteKing = board.squares[7][4].piece
     blackKing = board.squares[0][4].piece
+    assert isinstance(whiteKing, King) and isinstance(blackKing, King)
 
     for row in range(len(board.squares)):
         for col in range(len(board.squares[0])):
@@ -146,8 +148,7 @@ def main():
 
     state_running = True
 
-    isPieceSelected = False
-    selectedPiece = None
+    selectedPiece: Piece | None = None
 
     while state_running:
         printBoard(screen, board)       
@@ -160,10 +161,8 @@ def main():
                 (x, y) = pygame.mouse.get_pos()
                 row, col = y // SQUARE_SIZE, x // SQUARE_SIZE
 
-                if not isPieceSelected:                    
-                    if board.squares[row][col].piece:
-                        isPieceSelected = True
-                        selectedPiece = board.squares[row][col].piece
+                if selectedPiece is None:
+                    selectedPiece = board.squares[row][col].piece
                 else:
                     decision = (isWhiteTurn == selectedPiece.isWhite) and selectedPiece.validate(row, col, board)
                     if decision:
@@ -205,7 +204,7 @@ def main():
                             isWhiteTurn = not isWhiteTurn
 
                             # If an En Passant move, remove the captured pawn
-                            if board.consideringEnPassant:
+                            if board.consideringEnPassant and board.lastPieceMoved is not None:
                                 board.lastPieceMoved.square.piece = None
                                 board.lastPieceMoved.square.isOccupied = False
                                 board.consideringEnPassant = False
@@ -214,7 +213,6 @@ def main():
                             board.lastPieceMoved = selectedPiece
 
                     # Remove selected piece
-                    isPieceSelected = False
                     selectedPiece = None
                     
         pygame.display.update()
@@ -223,8 +221,10 @@ def printBoard(screen, board):
     for row in range(len(board.squares)):
         for col in range(len(board.squares[0])):
             square = board.squares[row][col]
+            assert square.image is not None, "square images are loaded in main()"
             screen.blit(square.image, (square.y * SQUARE_SIZE, square.x * SQUARE_SIZE))       
             if square.piece:
+                assert square.piece.image is not None, "piece images are loaded in main()"
                 screen.blit(square.piece.image, (square.y * SQUARE_SIZE + (SQUARE_SIZE - square.piece.width) / 2, square.x * SQUARE_SIZE + (SQUARE_SIZE - square.piece.height) / 2))       
 
 if __name__ == "__main__":
