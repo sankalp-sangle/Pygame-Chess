@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -7,22 +8,25 @@ if TYPE_CHECKING:
     from Piece import Piece
 
 
+# eq=False: squares and boards are identities, not values. Two empty light
+# squares must not compare equal, and both must stay hashable.
+
+@dataclass(eq=False)
 class ChessBoard:
-    def __init__(self, squares: list[list[Square]] | None = None):
-        self.squares: list[list[Square]] = squares if squares is not None else []
-        self.lastPieceMoved: Piece | None = None
-        self.consideringEnPassant = False
+    squares: list[list[Square]] = field(default_factory=list, repr=False)
+    lastPieceMoved: Piece | None = None
+    consideringEnPassant: bool = False
 
+
+@dataclass(eq=False)
 class Square:
-    def __init__(self, isWhite: bool = False, isOccupied: bool = False, x: int = 0, y: int = 0, piece: Piece | None = None):
-        self.isWhite = isWhite
-        self.isOccupied = isOccupied
-        self.x = x
-        self.y = y
-        self.piece = piece
-        self.image: pygame.Surface | None = None
+    isWhite: bool = False
+    isOccupied: bool = False
+    x: int = 0
+    y: int = 0
+    piece: Piece | None = None
+    image: pygame.Surface | None = field(default=None, repr=False)
 
-        if isWhite:
-            self.image_path = "../img/white.png"
-        else:
-            self.image_path = "../img/black.png"
+    @property
+    def image_path(self) -> str:
+        return "../img/white.png" if self.isWhite else "../img/black.png"
