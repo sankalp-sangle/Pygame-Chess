@@ -170,9 +170,24 @@ def hasLegalMove(board, isWhite, king):
                     piece.jumpedTwoSquares = savedJumped
 
                 victim = board.lastPieceMoved if isEnPassant else None
-                if valid and not leavesKingInCheck(board, piece, row, col, king, victim):
+                if valid and isLegalMove(board, piece, row, col, king, victim):
                     return True
     return False
+
+def isCastle(piece, col):
+    return isinstance(piece, King) and abs(col - piece.y) == 2
+
+def isLegalMove(board, piece, row, col, king, enPassantVictim=None):
+    """
+    For a move piece.validate() has already accepted, check the rules that need
+    to know which squares are attacked: the move must not leave the king in
+    check, and a castling king must not start in check or cross an attacked square.
+    """
+    if isCastle(piece, col):
+        crossedCol = (piece.y + col) // 2
+        if kingUnderCheck(board, king) or leavesKingInCheck(board, piece, row, crossedCol, king):
+            return False
+    return not leavesKingInCheck(board, piece, row, col, king, enPassantVictim)
 
 def isCheckmate(board, isWhite, king):
     """True if the side `isWhite` is in check and has no legal move."""
@@ -232,10 +247,18 @@ def main():
                     if decision:
                         # Reject the move if it would leave the mover's king in check
                         enPassantVictim = board.lastPieceMoved if board.consideringEnPassant else None
-                        if leavesKingInCheck(board, selectedPiece, row, col, whiteKing if isWhiteTurn else blackKing, enPassantVictim):
+                        if not isLegalMove(board, selectedPiece, row, col, whiteKing if isWhiteTurn else blackKing, enPassantVictim):
                             board.consideringEnPassant = False
                         else:
+                            # Castling: the rook jumps to the square the king crosses
+                            if isCastle(selectedPiece, col):
+                                rook = board.squares[row][7 if col > selectedPiece.y else 0].piece
+                                assert rook is not None, "King.canCastle() checked the rook is there"
+                                movePiece(board, rook, row, (selectedPiece.y + col) // 2)
+                                rook.hasMoved = True
+
                             movePiece(board, selectedPiece, row, col)
+                            selectedPiece.hasMoved = True
 
                             # Check for pawn promotion
                             if isinstance(selectedPiece, Pawn) and ((selectedPiece.isWhite and selectedPiece.x == 0) or (not selectedPiece.isWhite and selectedPiece.x == 7)):

@@ -23,6 +23,7 @@ class Piece:
         self.height = self.HEIGHT
         self.width = self.WIDTH
         self.isWhite = isWhite
+        self.hasMoved = False   # set once the piece makes a move in the game; used for castling
 
     def validate(self, newX: int, newY: int, board: ChessBoard) -> bool:
         raise NotImplementedError
